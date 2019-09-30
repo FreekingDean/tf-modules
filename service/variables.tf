@@ -135,3 +135,8 @@ variable "manager_only" {
   description = "Require running this/these containers only on a manager node"
   default = false
 }
+
+variable "global" {
+  description = "Run this globally"
+  default = false
+}

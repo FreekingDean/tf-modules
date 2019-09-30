@@ -160,6 +160,7 @@ resource "docker_service" "service" {
   }
 
   mode {
+    global = var.global
     replicated {
       replicas = var.scale
     }
