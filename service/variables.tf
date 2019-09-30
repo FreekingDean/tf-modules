@@ -115,6 +115,12 @@ variable "read_write_paths" {
   }))
 }
 
+variable "ephermeral_volumes" {
+  description = "Ephemeral volumes used to store data for services"
+  default = []
+  type = list(string)
+}
+
 variable "scale" {
   description = "Override for scaling how many containers should exist for this service"
   default = 2

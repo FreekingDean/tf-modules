@@ -83,6 +83,7 @@ locals {
       type = "bind"
     }],
     local.read_only_paths_normalized,
+    local.read_write_paths_normalized,
     local.fast_paths_normalized,
   ])
 
@@ -98,7 +99,7 @@ locals {
   )
 
   networks = flatten([
-    var.web_access_port == null ? [] : ["ifjk2fi7q9qusm7p5p5q594l6"],
+    var.web_access_port == null ? [] : ["ru619hvj9aam9ufo4pt9sajwy"],
   ])
 }
 resource "docker_service" "service" {
