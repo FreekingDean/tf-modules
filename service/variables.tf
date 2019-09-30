@@ -130,3 +130,8 @@ variable "vpn" {
   description = "Name of the VPN to connect to"
   default = ""
 }
+
+variable "manager_only" {
+  description = "Require running this/these containers only on a manager node"
+  default = false
+}

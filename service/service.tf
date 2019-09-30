@@ -101,12 +101,21 @@ locals {
   networks = flatten([
     var.web_access_port == null ? [] : ["ru619hvj9aam9ufo4pt9sajwy"],
   ])
+
+  constraints = flatten([
+    var.manager_only ? ["node.role==manager"] : []
+  ])
 }
+
 resource "docker_service" "service" {
   name = var.name
 
   task_spec {
     networks = local.networks
+
+    placement {
+      constraints = local.constraints
+    }
 
     container_spec {
       image = "${var.image}:${var.image_version}"
