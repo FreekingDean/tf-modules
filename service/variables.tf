@@ -106,6 +106,15 @@ variable "read_only_paths" {
   }))
 }
 
+variable "read_write_paths" {
+  description = "Additional read only mounts"
+  default     = []
+  type        = list(object({
+    c = string
+    h = string
+  }))
+}
+
 variable "scale" {
   description = "Override for scaling how many containers should exist for this service"
   default = 2

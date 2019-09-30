@@ -13,12 +13,18 @@ locals {
   }]
   ports = concat(local.tcp_ports, local.udp_ports)
 
-
   read_only_paths_normalized = [for paths in var.read_only_paths: {
     target = paths.c
     source = paths.h
     type = "bind"
     read_only = true
+  }]
+
+  read_write_paths_normalized = [for paths in var.read_write_paths: {
+    target = paths.c
+    source = paths.h
+    type = "bind"
+    read_only = false
   }]
 
   fast_paths_normalized = [for path in var.fast_paths: {
