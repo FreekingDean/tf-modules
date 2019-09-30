@@ -110,6 +110,8 @@ locals {
 resource "docker_service" "service" {
   name = var.name
 
+  labels = local.labels
+
   task_spec {
     networks = local.networks
 
