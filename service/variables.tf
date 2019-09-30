@@ -140,3 +140,8 @@ variable "global" {
   description = "Run this globally"
   default = false
 }
+
+variable "added_networks" {
+  description = "Additional networks to attach to"
+  default = []
+}

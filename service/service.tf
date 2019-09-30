@@ -100,6 +100,7 @@ locals {
 
   networks = flatten([
     var.web_access_port == null ? [] : ["ru619hvj9aam9ufo4pt9sajwy"],
+    var.added_networks
   ])
 
   constraints = flatten([
@@ -181,8 +182,15 @@ data "http" "ip_address" {
   url = "https://wtfismyip.com/text"
 }
 
+data "cloudflare_zones" "deangalvin-com" {
+  filter {
+    name = "deangalvin.com"
+  }
+}
+
 resource "cloudflare_record" "a_record" {
   count = "${var.web_access_port == null ? 0 : 1}"
+  zone_id = cloudflare_zones.deangalvin-com[0].id
   domain = "deangalvin.com"
   name = "${var.name}"
   value = "${chomp(data.http.ip_address.body)}"
