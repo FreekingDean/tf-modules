@@ -138,7 +138,7 @@ variable "manager_only" {
 
 variable "global" {
   description = "Run this globally"
-  default = false
+  default = null
 }
 
 variable "added_networks" {
