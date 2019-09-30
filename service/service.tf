@@ -190,7 +190,7 @@ data "cloudflare_zones" "deangalvin-com" {
 
 resource "cloudflare_record" "a_record" {
   count = "${var.web_access_port == null ? 0 : 1}"
-  zone_id = data.cloudflare_zones.deangalvin-com[0].id
+  zone_id = data.cloudflare_zones.deangalvin-com.zones[0].id
   name = "${var.name}"
   value = "${chomp(data.http.ip_address.body)}"
   ttl = 1
