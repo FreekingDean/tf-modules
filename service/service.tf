@@ -115,6 +115,10 @@ resource "docker_service" "service" {
 
     placement {
       constraints = local.constraints
+      platforms {
+        os = "linux"
+        architecture = "amd64"
+      }
     }
 
     container_spec {
