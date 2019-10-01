@@ -149,4 +149,5 @@ variable "added_networks" {
 variable "traefik_network_id" {
   description = "Traefik network id to use for proxying"
   type = string
+  default = null
 }
