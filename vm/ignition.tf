@@ -29,6 +29,7 @@ data "ignition_systemd_unit" "storage_unit" {
 data "ignition_user" "user" {
   name = "core"
   groups = ["sudo"]
+  uid = 500
 
   #Example password: foobar
   password_hash = "$5$XMoeOXG6$8WZoUCLhh8L/KYhsJN2pIRb3asZ2Xos3rJla.FA1TI7"
