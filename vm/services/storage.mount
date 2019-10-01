@@ -1,0 +1,10 @@
+[Unit]
+Description=storage
+Before=local-fs.target
+[Mount]
+What=storage
+Where=/storage
+Options=trans=virtio,version=9p2000.L
+Type=9p
+[Install]
+WantedBy=local-fs.target
