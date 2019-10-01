@@ -145,3 +145,8 @@ variable "added_networks" {
   description = "Additional networks to attach to"
   default = []
 }
+
+variable "traefik_network_id" {
+  description = "Traefik network id to use for proxying"
+  default = "b1si02hdnxuc5lkkh23yxxa0x"
+}

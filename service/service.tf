@@ -99,7 +99,7 @@ locals {
   )
 
   networks = flatten([
-    var.web_access_port == null ? [] : ["ru619hvj9aam9ufo4pt9sajwy"],
+    var.web_access_port == null ? [] : [var.traefik_network_id],
     var.added_networks
   ])
 
