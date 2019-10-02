@@ -41,7 +41,7 @@ resource "libvirt_network" "main_net" {
   name = local.network_name
   addresses = [local.ip_cidr]
   domain = local.network_domain
-  bridge = local.bridge__name
+  bridge = local.bridge_name
   dns {
     enabled = true
 
