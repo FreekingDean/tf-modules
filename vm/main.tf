@@ -5,20 +5,22 @@ locals {
       network_name = "dockernet"
       ip_prefix = "10.1.1"
       bridge_name = "dckrbr"
+      mac_prefix = "1"
     },
     "k8s" = {
       os = "https://github.com/rancher/k3os/releases/download/v0.3.0/k3os-amd64.iso"
       network_name = "k8snet"
       ip_prefix = "10.1.2"
+      mac_prefix = "0"
       bridge_name = "k8sbr"
     }
   }
   ip_prefix = local.data[var.orchistration_type]["ip_prefix"]
-  controller_ip = format("%s.11", local.ip_prefix)
-  ip_cidr = format("%s.0/24", local.ip_prefix)
+  controller_ip = "${local.ip_prefix}.11"
+  ip_cidr = "${local.ip_prefix}.0/24"
   os = local.data[var.orchistration_type]["os"]
   network_name = local.data[var.orchistration_type]["network_name"]
-  network_domain = format("%s.local", local.network_name)
+  network_domain = "${local.network_name}.local"
   bridge_name = local.data[var.orchistration_type]["bridge_name"]
   memory = 8192 / var.node_count
 }
@@ -39,12 +41,12 @@ resource "libvirt_network" "main_net" {
   name = local.network_name
   addresses = [local.ip_cidr]
   domain = local.network_domain
-  bridge = local.bridge_name
+  bridge = local.bridge__name
   dns {
     enabled = true
 
     hosts {
-      hostname = format("controller.%s", local.network_domain)
+      hostname = "controller.${local.network_domain}"
       ip = local.controller_ip
     }
   }
@@ -86,7 +88,7 @@ resource "libvirt_domain" "vm" {
   network_interface {
     network_id = libvirt_network.main_net.id
     addresses = ["10.0.1.1${count.index + 1}"]
-    mac = "52:54:00:6c:3c:0${count.index + 1}"
+    mac = "52:54:00:6c:3c:${local.mac_prefix}${count.index + 1}"
     wait_for_lease = true
   }
 
