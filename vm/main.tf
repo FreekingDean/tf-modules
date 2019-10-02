@@ -12,11 +12,11 @@ locals {
     }
   }
   ip_prefix = local.data[var.orchistration_type]["ip_prefix"]
-  controller_ip = local.ip_prefix+".11"
-  ip_cidr = local.ip_prefix+".0/24"
+  controller_ip = format("%s.11", local.ip_prefix)
+  ip_cidr = format("%s.0/24", local.ip_prefix)
   os = local.data[var.orchistration_type]["os"]
   network_name = local.data[var.orchistration_type]["network_name"]
-  network_domain = local.network_name + ".local"
+  network_domain = format("%s.local", local.network_name)
   memory = 8192 / var.node_count
 }
 
@@ -40,7 +40,7 @@ resource "libvirt_network" "main_net" {
     enabled = true
 
     hosts {
-      hostname = "controller." + local.network_domain
+      hostname = format("controller.%s", local.network_domain)
       ip = local.controller_ip
     }
   }
