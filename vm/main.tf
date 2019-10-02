@@ -23,6 +23,7 @@ locals {
   network_domain = "${local.network_name}.local"
   bridge_name = local.data[var.orchistration_type]["bridge_name"]
   memory = 8192 / var.node_count
+  mac_prefix = local.data[var.orchistration_type]["mac_prefix"]
 }
 
 resource "libvirt_pool" "pool" {
