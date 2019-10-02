@@ -88,7 +88,7 @@ resource "libvirt_domain" "vm" {
 
   network_interface {
     network_id = libvirt_network.main_net.id
-    addresses = ["10.0.1.1${count.index + 1}"]
+    addresses = ["${local.ip_prefix}.1${count.index + 1}"]
     mac = "52:54:00:6c:3c:${local.mac_prefix}${count.index + 1}"
     wait_for_lease = true
   }
