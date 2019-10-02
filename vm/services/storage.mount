@@ -4,7 +4,7 @@ Before=local-fs.target
 [Mount]
 What=storage
 Where=/storage
-Options=trans=virtio,version=9p2000.L,cache=mmap,gid=500,uid=500
+Options=trans=virtio,version=9p2000.L,cache=mmap
 Type=9p
 [Install]
 WantedBy=local-fs.target
