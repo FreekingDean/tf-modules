@@ -170,6 +170,10 @@ resource "docker_service" "service" {
       }
     }
   }
+
+  update_config {
+    order = var.scale == 1 ? "start-first" : "stop-first"
+  }
 }
 
 data "docker_registry_image" "container_registry_image" {
