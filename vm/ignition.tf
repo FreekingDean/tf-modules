@@ -41,3 +41,8 @@ data "ignition_directory" "storage" {
   filesystem = "root"
   path = "/storage"
 }
+
+data "ignition_directory" "testdir" {
+  filesystem = "root"
+  path = "/testdir"
+}

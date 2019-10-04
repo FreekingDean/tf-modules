@@ -64,6 +64,9 @@ resource "libvirt_volume" "os" {
   source = local.os
   format = "qcow2"
   count = var.node_count
+  depends_on = [
+    libvirt_ignition.ignition
+  ]
 }
 
 resource "libvirt_domain" "vm" {
