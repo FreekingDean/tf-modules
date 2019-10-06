@@ -90,7 +90,7 @@ locals {
   labels = merge(
     {},
     var.web_access_port == null ? {} : {
-      "traefik.frontend.rule" = "Host:${var.name}.deangalvin.com"
+      "traefik.frontend.rule" = "Host:${var.name}.local.deangalvin.com"
       "traefik.frontend.entryPoints" = "https"
       "traefik.tags" = "traefik-public"
       "traefik.docker.network" = "traefik-public"
@@ -199,9 +199,9 @@ data "cloudflare_zones" "deangalvin" {
 resource "cloudflare_record" "a_record" {
   count = "${var.web_access_port == null ? 0 : 1}"
   zone_id = data.cloudflare_zones.deangalvin.zones[0].id
-  name = "${var.name}"
-  value = "${chomp(data.http.ip_address.body)}"
+  name = "${var.name}.local"
+  value = "192.168.2.23"
   ttl = 1
   type = "A"
-  proxied = "true"
+  proxied = "false"
 }

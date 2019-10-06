@@ -71,7 +71,7 @@ resource "libvirt_volume" "os" {
 
 resource "libvirt_domain" "vm" {
   name = "${var.orchistration_type}.${count.index}"
-  coreos_ignition = libvirt_ignition.ignition.id
+  coreos_ignition = var.orchistration_type == "docker" ? libvirt_ignition.ignition.id : null
   memory = local.memory
 
   filesystem {
