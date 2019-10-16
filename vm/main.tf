@@ -1,41 +1,20 @@
 locals {
-  data = {
-    "docker" = {
-      os = "/home/bananaboy/Projects/tftest/coreos_production_qemu_image.img"
-      network_name = "dockernet"
-      ip_prefix = "10.1.1"
-      bridge_name = "dckrbr"
-      mac_prefix = "1"
-    },
-    "k8s" = {
-      os = "https://github.com/rancher/k3os/releases/download/v0.3.0/k3os-amd64.iso"
-      network_name = "k8snet"
-      ip_prefix = "10.1.2"
-      mac_prefix = "0"
-      bridge_name = "k8sbr"
-    }
-  }
-  ip_prefix = local.data[var.orchistration_type]["ip_prefix"]
+  ip_prefix = "10.1.2"
   controller_ip = "${local.ip_prefix}.11"
   ip_cidr = "${local.ip_prefix}.0/24"
-  os = local.data[var.orchistration_type]["os"]
-  network_name = local.data[var.orchistration_type]["network_name"]
+  network_name = "k8snet"
   network_domain = "${local.network_name}.local"
-  bridge_name = local.data[var.orchistration_type]["bridge_name"]
+  bridge_name = local.network_name
   memory = 8192 / var.node_count
-  mac_prefix = local.data[var.orchistration_type]["mac_prefix"]
+  mac_prefix = "0"
+  dist_org = "FreekingDean"
+  dist_version = "v0.5.1-rc1"
 }
 
 resource "libvirt_pool" "pool" {
   name = "${var.orchistration_type}"
   type = "dir"
   path = "/storage/fast/vms/pool_${var.orchistration_type}"
-}
-
-resource "libvirt_ignition" "ignition" {
-  name    = "main_ignition_${var.orchistration_type}"
-  pool    = libvirt_pool.pool.name
-  content = data.ignition_config.startup.rendered
 }
 
 resource "libvirt_network" "main_net" {
@@ -58,21 +37,93 @@ resource "libvirt_network" "main_net" {
 }
 
 # We fetch the latest ubuntu release image from their mirrors
-resource "libvirt_volume" "os" {
-  name   = "os-qcow2_${var.orchistration_type}.${count.index}"
+#resource "libvirt_volume" "os" {
+#  #size = 2147483648
+#  name   = "os"
+#  pool   = libvirt_pool.pool.name
+#  source = "https://github.com/rancher/k3os/releases/download/v0.3.0/k3os-amd64.iso"
+#  #format = "raw"
+#}
+
+resource "libvirt_volume" "root" {
+  size = 2147483648
+  name   = "root"
   pool   = libvirt_pool.pool.name
-  source = local.os
+  #source = "https://github.com/rancher/k3os/releases/download/v0.3.0/k3os-amd64.iso"
+  format = "raw"
+}
+
+# We fetch the latest ubuntu release image from their mirrors
+resource "libvirt_volume" "kernel" {
+  lifecycle {
+    ignore_changes = [
+      format,
+    ]
+  }
+  name   = "kernel-qcow2_${var.orchistration_type}.${count.index}"
+  pool   = libvirt_pool.pool.name
+  source = "https://github.com/${local.dist_org}/k3os/releases/download/${local.dist_version}/k3os-vmlinuz-amd64"
   format = "qcow2"
   count = var.node_count
-  depends_on = [
-    libvirt_ignition.ignition
-  ]
+}
+
+# We fetch the latest ubuntu release image from their mirrors
+resource "libvirt_volume" "initrd" {
+  lifecycle {
+    ignore_changes = [
+      format,
+    ]
+  }
+  name   = "initrd-qcow2_${var.orchistration_type}.${count.index}"
+  pool   = libvirt_pool.pool.name
+  source = "https://github.com/${local.dist_org}/k3os/releases/download/${local.dist_version}/k3os-initrd-amd64"
+  format = "qcow2"
+  count = var.node_count
+}
+
+data "template_file" "user_data" {
+  template = file("${path.module}/cloud_init.cfg")
+}
+
+resource "libvirt_cloudinit_disk" "commoninit" {
+  name      = "commoninit.iso"
+  user_data = data.template_file.user_data.rendered
 }
 
 resource "libvirt_domain" "vm" {
   name = "${var.orchistration_type}.${count.index}"
-  coreos_ignition = var.orchistration_type == "docker" ? libvirt_ignition.ignition.id : null
   memory = local.memory
+
+  cloudinit = libvirt_cloudinit_disk.commoninit.id
+
+  kernel = libvirt_volume.kernel.*.id[count.index]
+  initrd = libvirt_volume.initrd.*.id[count.index]
+
+  cmdline = [
+    {
+      #"k3os.mode" = "live"
+      "k3os.debug" = "true"
+      "k3os.fallback_mode" = "install"
+      "k3os.install.silent" = "true"
+      "k3os.install.debug" = "true"
+      "k3os.install.device" = "/dev/vda"
+      "hostname" = count.index == 0 ? "k8s.master" : "k8s.node${count.index}"
+      "k3os.labels.machine" = "enterprise"
+      "k3os.modules" = "kvm"
+      "k3os.modules" = "nvme"
+      "k3os.modules" = "9p"
+      "run_cmd" = "\"mkdir -p /storage && mount storage /storage -t9p\""
+      "k3os.install.iso_url" = "https://github.com/${local.dist_org}/k3os/releases/download/${local.dist_version}/k3os-amd64.iso"
+      "console" = "ttyS0,115200"
+      "ssh_authorized_keys" = "github:FreekingDean"
+    },
+    {
+      "0 k3os.k3s_args" = "server"
+    },
+    {
+      "1 k3os.k3s_args" = "\"--no-deploy traefik\""
+    },
+  ]
 
   filesystem {
     source   = "/storage"
@@ -80,20 +131,24 @@ resource "libvirt_domain" "vm" {
     readonly = false
     accessmode = "mapped"
   }
-
-  disk {
-    volume_id = libvirt_volume.os.*.id[count.index]
-  }
-
+  
   boot_device {
     dev = ["cdrom"]
+  }
+
+  #disk {
+  #  volume_id = libvirt_volume.os.id
+  #}
+
+  disk {
+    volume_id = libvirt_volume.root.id
   }
 
   network_interface {
     network_id = libvirt_network.main_net.id
     addresses = ["${local.ip_prefix}.1${count.index + 1}"]
-    mac = "52:54:00:6c:3c:${local.mac_prefix}${count.index + 1}"
-    wait_for_lease = true
+    mac = "52:54:00:6C:3C:${local.mac_prefix}${count.index + 1}"
+    wait_for_lease = false
   }
 
   console {
