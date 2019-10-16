@@ -81,20 +81,20 @@ resource "libvirt_volume" "initrd" {
   count = var.node_count
 }
 
-data "template_file" "user_data" {
-  template = file("${path.module}/cloud_init.cfg")
-}
-
-resource "libvirt_cloudinit_disk" "commoninit" {
-  name      = "commoninit.iso"
-  user_data = data.template_file.user_data.rendered
-}
+#data "template_file" "user_data" {
+#  template = file("${path.module}/cloud_init.cfg")
+#}
+#
+#resource "libvirt_cloudinit_disk" "commoninit" {
+#  name      = "commoninit.iso"
+#  user_data = data.template_file.user_data.rendered
+#}
 
 resource "libvirt_domain" "vm" {
   name = "${var.orchistration_type}.${count.index}"
   memory = local.memory
 
-  cloudinit = libvirt_cloudinit_disk.commoninit.id
+  #cloudinit = libvirt_cloudinit_disk.commoninit.id
 
   kernel = libvirt_volume.kernel.*.id[count.index]
   initrd = libvirt_volume.initrd.*.id[count.index]
@@ -114,15 +114,16 @@ resource "libvirt_domain" "vm" {
       "k3os.modules" = "9p"
       "run_cmd" = "\"mkdir -p /storage && mount storage /storage -t9p\""
       "k3os.install.iso_url" = "https://github.com/${local.dist_org}/k3os/releases/download/${local.dist_version}/k3os-amd64.iso"
+      #"k3os.install.config_url" = "https://raw.githubusercontent.com/FreekingDean/tf-modules/master/vm/k3os.yaml"
       "console" = "ttyS0,115200"
       "ssh_authorized_keys" = "github:FreekingDean"
     },
     {
-      "0 k3os.k3s_args" = "server"
+      "0 k3os.k3s_args" = "\"server --no-deploy traefik\""
     },
-    {
-      "1 k3os.k3s_args" = "\"--no-deploy traefik\""
-    },
+    #{
+    #  "1 k3os.k3s_args" = "\"--no-deploy traefik\""
+    #},
   ]
 
   filesystem {
