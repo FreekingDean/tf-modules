@@ -46,9 +46,10 @@ resource "libvirt_network" "main_net" {
 #}
 
 resource "libvirt_volume" "root" {
-  size = 2147483648
-  name   = "root"
+  size = (1024*1024*1024)*8
+  name   = "root.${count.index}"
   pool   = libvirt_pool.pool.name
+  count = var.node_count
   #source = "https://github.com/rancher/k3os/releases/download/v0.3.0/k3os-amd64.iso"
   format = "raw"
 }
@@ -117,9 +118,12 @@ resource "libvirt_domain" "vm" {
       #"k3os.install.config_url" = "https://raw.githubusercontent.com/FreekingDean/tf-modules/master/vm/k3os.yaml"
       "console" = "ttyS0,115200"
       "ssh_authorized_keys" = "github:FreekingDean"
+      "k3os.token" = "mysecrettoken"
     },
-    {
-      "0 k3os.k3s_args" = "\"server --no-deploy traefik\""
+    count.index == 0 ? {
+      "k3os.k3s_args" = "\"server --no-deploy traefik\""
+    } : {
+      "k3os.server_url" = "https://${local.controller_ip}:6443"
     },
     #{
     #  "1 k3os.k3s_args" = "\"--no-deploy traefik\""
@@ -142,7 +146,7 @@ resource "libvirt_domain" "vm" {
   #}
 
   disk {
-    volume_id = libvirt_volume.root.id
+    volume_id = libvirt_volume.root[count.index].id
   }
 
   network_interface {

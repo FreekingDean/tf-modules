@@ -263,7 +263,7 @@ resource "kubernetes_service" "service" {
 
   spec {
     port {
-      port        = 9117
+      port        = var.web_access_port
       target_port = "web-access"
     }
 
