@@ -221,7 +221,7 @@ resource "kubernetes_deployment" "deployment" {
 
     selector {
       match_labels = {
-        k8s-app = "jackett"
+        k8s-app = var.name
       }
     }
 
