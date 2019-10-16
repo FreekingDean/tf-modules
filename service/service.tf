@@ -290,7 +290,7 @@ resource "kubernetes_ingress" "ingress" {
         path {
           backend {
             service_name = var.name
-            service_port = "web-access"
+            service_port = var.web_access_port
           }
 
           path = "/"
