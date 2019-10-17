@@ -123,7 +123,7 @@ variable "ephermeral_volumes" {
 
 variable "scale" {
   description = "Override for scaling how many containers should exist for this service"
-  default = 2
+  default = 1
 }
 
 variable "has_vpn" {
