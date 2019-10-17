@@ -126,28 +126,7 @@ variable "scale" {
   default = 2
 }
 
-variable "vpn" {
-  description = "Name of the VPN to connect to"
-  default = ""
-}
-
-variable "manager_only" {
-  description = "Require running this/these containers only on a manager node"
+variable "has_vpn" {
+  description = "Adds NET_ADMIN for vpn-abilty"
   default = false
-}
-
-variable "global" {
-  description = "Run this globally"
-  default = null
-}
-
-variable "added_networks" {
-  description = "Additional networks to attach to"
-  default = []
-}
-
-variable "traefik_network_id" {
-  description = "Traefik network id to use for proxying"
-  type = string
-  default = null
 }

@@ -113,7 +113,7 @@ resource "libvirt_domain" "vm" {
       "k3os.modules" = "kvm"
       "k3os.modules" = "nvme"
       "k3os.modules" = "9p"
-      "run_cmd" = "\"mkdir -p /storage && mount storage /storage -t9p\""
+      "run_cmd" = "\"mkdir -p /storage && mount storage /storage -t9p -otrans=virtio,version=9p2000.L,cache=mmap\""
       "k3os.install.iso_url" = "https://github.com/${local.dist_org}/k3os/releases/download/${local.dist_version}/k3os-amd64.iso"
       #"k3os.install.config_url" = "https://raw.githubusercontent.com/FreekingDean/tf-modules/master/vm/k3os.yaml"
       "console" = "ttyS0,115200"
