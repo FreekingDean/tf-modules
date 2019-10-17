@@ -47,7 +47,7 @@ locals {
     var.seedbox_path == null ? [] : [{
       target = var.seedbox_path
       source = "/storage/cold/seedbox"
-      read_only = true
+      read_only = false
       type = "bind"
     }],
     var.tv_path == null ? [] : [{
