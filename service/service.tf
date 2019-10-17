@@ -34,12 +34,12 @@ locals {
     read_only = false
   }]
   paths = flatten([
-    {
-      target = "/etc/localtime",
-      source = "/etc/localtime",
-      type = "bind",
-      read_only = true,
-    },
+    #{
+    #  target = "/etc/localtime",
+    #  source = "/etc/localtime",
+    #  type = "bind",
+    #  read_only = true,
+    #},
     var.config_path == null ? [] : [{
       target = var.config_path
       source = "/storage/cold/opt/${var.name}"
