@@ -106,6 +106,10 @@ resource "kubernetes_deployment" "deployment" {
           }
         }
 
+        dns_config {
+          nameservers = ["8.8.8.8"]
+        }
+
         container {
           name  = var.name
           image = "${var.image}:${var.image_version}"
