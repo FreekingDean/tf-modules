@@ -1,112 +1,106 @@
-#locals {
-#  tcp_ports = [for port in var.forward_tcp: {
-#    name           = "TCP_${port}"
-#    target_port    = port
-#    published_port = port
-#    protocol       = "tcp"
-#  }]
-#  udp_ports = [for port in var.forward_udp: {
-#    name           = "UDP_${port}"
-#    target_port    = port
-#    published_port = port
-#    protocol       = "udp"
-#  }]
-#  ports = concat(local.tcp_ports, local.udp_ports)
-#
-#  read_only_paths_normalized = [for paths in var.read_only_paths: {
-#    target = paths.c
-#    source = paths.h
-#    type = "bind"
-#    read_only = true
-#  }]
-#
-#  read_write_paths_normalized = [for paths in var.read_write_paths: {
-#    target = paths.c
-#    source = paths.h
-#    type = "bind"
-#    read_only = false
-#  }]
-#
-#  fast_paths_normalized = [for path in var.fast_paths: {
-#    target = path
-#    source = "/storage/fast/${var.name}${path}"
-#    type = "bind"
-#    read_only = false
-#  }]
-#  paths = flatten([
-#    {
-#      target = "/etc/localtime",
-#      source = "/etc/localtime",
-#      type = "bind",
-#      read_only = true,
-#    },
-#    var.config_path == null ? [] : [{
-#      target = var.config_path
-#      source = "/storage/cold/opt/${var.name}"
-#      read_only = false
-#      type = "bind"
-#    }],
-#    var.root_path == null ? [] : [{
-#      target = var.root_path
-#      source = "/"
-#      read_only = true
-#      type = "bind"
-#    }],
-#    var.dockersock_path == null ? [] : [{
-#      target = var.dockersock_path
-#      source = "/var/run/docker.sock"
-#      read_only = true
-#      type = "bind"
-#    }],
-#    var.storage_path == null ? [] : [{
-#      target = var.storage_path
-#      source = "/storage/cold"
-#      read_only = false
-#      type = "bind"
-#    }],
-#    var.seedbox_path == null ? [] : [{
-#      target = var.seedbox_path
-#      source = "/storage/cold/seedbox"
-#      read_only = true
-#      type = "bind"
-#    }],
-#    var.tv_path == null ? [] : [{
-#      target = var.tv_path
-#      source = "/storage/cold/tv"
-#      read_only = false
-#      type = "bind"
-#    }],
-#    var.movies_path == null ? [] : [{
-#      target = var.movies_path
-#      source = "/storage/cold/movies"
-#      read_only = false
-#      type = "bind"
-#    }],
-#    local.read_only_paths_normalized,
-#    local.read_write_paths_normalized,
-#    local.fast_paths_normalized,
-#  ])
-#
-#  labels = merge(
-#    {},
-#    var.web_access_port == null ? {} : {
-#      "traefik.frontend.rule" = "Host:${var.name}.local.deangalvin.com"
-#      "traefik.frontend.entryPoints" = "https"
-#      "traefik.tags" = "traefik-public"
-#      "traefik.docker.network" = "traefik-public"
-#      "traefik.port" = var.web_access_port
-#    }
-#  )
-#
-#  networks = flatten([
-#    var.web_access_port == null ? [] : [var.traefik_network_id],
-#    var.added_networks
-#  ])
-#
-#  constraints = flatten([
-#    var.manager_only ? ["node.role==manager"] : []
-#  ])
-#}
+locals {
+  tcp_ports = [for port in var.forward_tcp: {
+    name           = "TCP_${port}"
+    target_port    = port
+    published_port = port
+    protocol       = "tcp"
+  }]
+  udp_ports = [for port in var.forward_udp: {
+    name           = "UDP_${port}"
+    target_port    = port
+    published_port = port
+    protocol       = "udp"
+  }]
+  ports = concat(local.tcp_ports, local.udp_ports)
+
+  read_only_paths_normalized = [for paths in var.read_only_paths: {
+    target = paths.c
+    source = paths.h
+    type = "bind"
+    read_only = true
+  }]
+
+  read_write_paths_normalized = [for paths in var.read_write_paths: {
+    target = paths.c
+    source = paths.h
+    type = "bind"
+    read_only = false
+  }]
+
+  fast_paths_normalized = [for path in var.fast_paths: {
+    target = path
+    source = "/storage/fast/${var.name}${path}"
+    type = "bind"
+    read_only = false
+  }]
+  paths = flatten([
+    {
+      target = "/etc/localtime",
+      source = "/etc/localtime",
+      type = "bind",
+      read_only = true,
+    },
+    var.config_path == null ? [] : [{
+      target = var.config_path
+      source = "/storage/cold/opt/${var.name}"
+      read_only = false
+      type = "bind"
+    }],
+    var.root_path == null ? [] : [{
+      target = var.root_path
+      source = "/"
+      read_only = true
+      type = "bind"
+    }],
+    var.storage_path == null ? [] : [{
+      target = var.storage_path
+      source = "/storage/cold"
+      read_only = false
+      type = "bind"
+    }],
+    var.seedbox_path == null ? [] : [{
+      target = var.seedbox_path
+      source = "/storage/cold/seedbox"
+      read_only = true
+      type = "bind"
+    }],
+    var.tv_path == null ? [] : [{
+      target = var.tv_path
+      source = "/storage/cold/tv"
+      read_only = false
+      type = "bind"
+    }],
+    var.movies_path == null ? [] : [{
+      target = var.movies_path
+      source = "/storage/cold/movies"
+      read_only = false
+      type = "bind"
+    }],
+    local.read_only_paths_normalized,
+    local.read_write_paths_normalized,
+    local.fast_paths_normalized,
+  ])
+
+  labels = merge(
+    {},
+    var.web_access_port == null ? {} : {
+      "traefik.frontend.rule" = "Host:${var.name}.local.deangalvin.com"
+      "traefik.frontend.entryPoints" = "https"
+      "traefik.tags" = "traefik-public"
+      "traefik.docker.network" = "traefik-public"
+      "traefik.port" = var.web_access_port
+    }
+  )
+
+  networks = flatten([
+    var.web_access_port == null ? [] : [var.traefik_network_id],
+    var.added_networks
+  ])
+
+  constraints = flatten([
+    var.manager_only ? ["node.role==manager"] : []
+  ])
+}
 #
 #resource "docker_service" "service" {
 #  name = var.name
@@ -234,6 +228,16 @@ resource "kubernetes_deployment" "deployment" {
       }
 
       spec {
+        dynamic "volume" {
+          for_each = local.paths
+          content {
+            name = "vol-${volume.key}"
+            host_path {
+              path = volume.value.source
+            }
+          }
+        }
+
         container {
           name  = var.name
           image = "${var.image}:${var.image_version}"
@@ -242,6 +246,16 @@ resource "kubernetes_deployment" "deployment" {
             container_port = var.web_access_port
             protocol       = "TCP"
             name           = "web-access"
+          }
+
+          dynamic "volume_mount" {
+            for_each = local.paths
+
+            content {
+              name = "vol-${volume_mount.key}"
+              mount_path = volume_mount.value.source
+              read_only = volume_mount.value.read_only
+            }
           }
         }
       }
