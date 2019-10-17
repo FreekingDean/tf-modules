@@ -253,7 +253,7 @@ resource "kubernetes_deployment" "deployment" {
 
             content {
               name = "vol-${volume_mount.key}"
-              mount_path = volume_mount.value.source
+              mount_path = volume_mount.value.target
               read_only = volume_mount.value.read_only
             }
           }
