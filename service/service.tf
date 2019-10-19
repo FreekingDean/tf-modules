@@ -181,9 +181,6 @@ resource "kubernetes_ingress" "ingress" {
   metadata {
     name = var.name
     namespace = "default"
-    annotations = {
-      "traefik.ingress.kubernetes.io/frontend-entry-points" = "http,https",
-    }
   }
 
   spec {
