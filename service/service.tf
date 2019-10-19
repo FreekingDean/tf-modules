@@ -149,6 +149,10 @@ resource "kubernetes_deployment" "deployment" {
 
     revision_history_limit = 5
   }
+
+  timeouts {
+    create = "2m"
+  }
 }
 
 resource "kubernetes_service" "service" {

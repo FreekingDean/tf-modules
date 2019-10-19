@@ -123,6 +123,7 @@ resource "libvirt_domain" "vm" {
     count.index == 0 ? {
       "k3os.k3s_args" = "\"server --no-deploy traefik\""
     } : {
+      #"k3os.k3s_args" = "\"--resolv-conf /etc/resolv.conf\""
       "k3os.server_url" = "https://${local.controller_ip}:6443"
     },
     #{
