@@ -115,6 +115,15 @@ variable "read_write_paths" {
   }))
 }
 
+variable "read_write_files" {
+  description = "Additional read only file mounts"
+  default     = []
+  type        = list(object({
+    c = string
+    h = string
+  }))
+}
+
 variable "ephermeral_volumes" {
   description = "Ephemeral volumes used to store data for services"
   default = []
@@ -128,5 +137,15 @@ variable "scale" {
 
 variable "has_vpn" {
   description = "Adds NET_ADMIN for vpn-abilty"
+  default = false
+}
+
+variable "added_devices" {
+  description = "Adds devices to container and SYS_RAWIO capability"
+  default = []
+}
+
+variable "tty" {
+  description = "Adds tty to container"
   default = false
 }

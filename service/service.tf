@@ -6,6 +6,13 @@ locals {
     read_only = true
   }]
 
+  read_write_files_normalized = [for paths in var.read_write_files: {
+    target = paths.c
+    source = paths.h
+    type = "file"
+    read_only = false
+  }]
+
   read_write_paths_normalized = [for paths in var.read_write_paths: {
     target = paths.c
     source = paths.h
@@ -19,6 +26,18 @@ locals {
     type = "bind"
     read_only = false
   }]
+
+  devices_normalized = [for path in var.added_devices: {
+    target = path
+    source = path
+    type = "bind"
+    read_only = false
+  }]
+
+  capabilities = flatten([
+    var.has_vpn ? ["NET_ADMIN"] : [],
+    length(var.added_devices) > 0 ? ["SYS_ADMIN", "SYS_RAWIO"] : []
+  ])
   paths = flatten([
     #{
     #  target = "/etc/localtime",
@@ -64,7 +83,9 @@ locals {
     }],
     local.read_only_paths_normalized,
     local.read_write_paths_normalized,
+    local.read_write_files_normalized,
     local.fast_paths_normalized,
+    local.devices_normalized,
   ])
 }
 
@@ -101,6 +122,7 @@ resource "kubernetes_deployment" "deployment" {
           content {
             name = "vol-${volume.key}"
             host_path {
+              type = volume.value.type == "file" ? "FileOrCreate" : null
               path = volume.value.source
             }
           }
@@ -115,8 +137,9 @@ resource "kubernetes_deployment" "deployment" {
           image = "${var.image}:${var.image_version}"
 
           security_context {
+            privileged = length(var.added_devices) > 0 ? true : false
             capabilities {
-              add = var.has_vpn ? ["NET_ADMIN"] : []
+              add = local.capabilities
             }
           }
 
@@ -143,6 +166,8 @@ resource "kubernetes_deployment" "deployment" {
               read_only = volume_mount.value.read_only
             }
           }
+          tty = var.tty
+          stdin = var.tty
         }
       }
     }
@@ -166,6 +191,7 @@ resource "kubernetes_service" "service" {
   }
 
   spec {
+    type = length(var.forward_tcp) == 0 ? "ClusterIP" : "LoadBalancer"
     port {
       port        = var.web_access_port
       target_port = "web-access"
