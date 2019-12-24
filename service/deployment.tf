@@ -188,6 +188,15 @@ resource "kubernetes_deployment" "deployment" {
             }
           }
 
+          dynamic "port" {
+            for_each = var.internal_udp
+            content {
+              container_port = port.value
+              protocol       = "UDP"
+              name           = "udp-int-${port.key}"
+            }
+          }
+
           dynamic "volume_mount" {
             for_each = local.paths
 

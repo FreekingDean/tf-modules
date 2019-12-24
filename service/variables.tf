@@ -49,6 +49,12 @@ variable "forward_udp" {
   type        = list(number)
 }
 
+variable "internal_udp" {
+  description = "UDP Ports to forward internally"
+  default     = []
+  type        = list(number)
+}
+
 variable "dns_nameservers" {
   description = "Name servers to use"
   default = null

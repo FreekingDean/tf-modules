@@ -105,6 +105,32 @@ resource "kubernetes_service" "internal_tcp" {
   }
 }
 
+resource "kubernetes_service" "internal_udp" {
+  count = length(var.internal_udp)
+
+  metadata {
+    name      = "${var.name}-udp"
+    namespace = "default"
+
+    labels = {
+      k8s-app = var.name
+    }
+  }
+
+  spec {
+    type = "ClusterIP"
+
+    port {
+      port        = var.internal_udp[count.index]
+      target_port = "udp-int-${count.index}"
+    }
+
+    selector = {
+      k8s-app = var.name
+    }
+  }
+}
+
 resource "kubernetes_ingress" "ingress-proxy" {
   count = length(var.proxy_list) == 0 ? 0 : 1
   metadata {
