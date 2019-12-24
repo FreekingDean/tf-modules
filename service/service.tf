@@ -1,97 +1,10 @@
 locals {
-  read_only_paths_normalized = [for paths in var.read_only_paths: {
-    target = paths.c
-    source = paths.h
-    type = "bind"
-    read_only = true
-  }]
-
-  read_write_files_normalized = [for paths in var.read_write_files: {
-    target = paths.c
-    source = paths.h
-    type = "file"
-    read_only = false
-  }]
-
-  read_write_paths_normalized = [for paths in var.read_write_paths: {
-    target = paths.c
-    source = paths.h
-    type = "bind"
-    read_only = false
-  }]
-
-  fast_paths_normalized = [for path in var.fast_paths: {
-    target = path
-    source = "/storage/fast/${var.name}${path}"
-    type = "bind"
-    read_only = false
-  }]
-
-  devices_normalized = [for path in var.added_devices: {
-    target = path
-    source = path
-    type = "bind"
-    read_only = false
-  }]
-
-  capabilities = flatten([
-    var.has_vpn ? ["NET_ADMIN"] : [],
-    length(var.added_devices) > 0 ? ["SYS_ADMIN", "SYS_RAWIO"] : []
-  ])
-  paths = flatten([
-    #{
-    #  target = "/etc/localtime",
-    #  source = "/etc/localtime",
-    #  type = "bind",
-    #  read_only = true,
-    #},
-    var.config_path == null ? [] : [{
-      target = var.config_path
-      source = "/storage/cold/opt/${var.name}"
-      read_only = false
-      type = "bind"
-    }],
-    var.root_path == null ? [] : [{
-      target = var.root_path
-      source = "/"
-      read_only = true
-      type = "bind"
-    }],
-    var.storage_path == null ? [] : [{
-      target = var.storage_path
-      source = "/storage/cold"
-      read_only = false
-      type = "bind"
-    }],
-    var.seedbox_path == null ? [] : [{
-      target = var.seedbox_path
-      source = "/storage/cold/seedbox"
-      read_only = false
-      type = "bind"
-    }],
-    var.tv_path == null ? [] : [{
-      target = var.tv_path
-      source = "/storage/cold/tv"
-      read_only = false
-      type = "bind"
-    }],
-    var.movies_path == null ? [] : [{
-      target = var.movies_path
-      source = "/storage/cold/movies"
-      read_only = false
-      type = "bind"
-    }],
-    local.read_only_paths_normalized,
-    local.read_write_paths_normalized,
-    local.read_write_files_normalized,
-    local.fast_paths_normalized,
-    local.devices_normalized,
-  ])
 }
 
-resource "kubernetes_deployment" "deployment" {
+resource "kubernetes_service" "service_web" {
+  count = var.web_access_port == null ? 0 : 1
   metadata {
-    name      = var.name
+    name      = "${var.name}-web"
     namespace = "default"
 
     labels = {
@@ -100,98 +13,8 @@ resource "kubernetes_deployment" "deployment" {
   }
 
   spec {
-    replicas = var.scale
+    type = "ClusterIP"
 
-    selector {
-      match_labels = {
-        k8s-app = var.name
-      }
-    }
-
-    template {
-      metadata {
-        labels = {
-          k8s-app = var.name
-        }
-        namespace = "default"
-      }
-
-      spec {
-        dynamic "volume" {
-          for_each = local.paths
-          content {
-            name = "vol-${volume.key}"
-            host_path {
-              type = volume.value.type == "file" ? "FileOrCreate" : null
-              path = volume.value.source
-            }
-          }
-        }
-
-        dns_config {
-          nameservers = ["8.8.8.8"]
-        }
-
-        container {
-          name  = var.name
-          image = "${var.image}:${var.image_version}"
-
-          security_context {
-            privileged = length(var.added_devices) > 0 ? true : false
-            capabilities {
-              add = local.capabilities
-            }
-          }
-
-          dynamic "env" {
-            for_each = var.env
-            content {
-              name = env.key
-              value = env.value
-            }
-          }
-
-          port {
-            container_port = var.web_access_port
-            protocol       = "TCP"
-            name           = "web-access"
-          }
-
-          dynamic "volume_mount" {
-            for_each = local.paths
-
-            content {
-              name = "vol-${volume_mount.key}"
-              mount_path = volume_mount.value.target
-              read_only = volume_mount.value.read_only
-            }
-          }
-          tty = var.tty
-          stdin = var.tty
-        }
-      }
-    }
-
-    revision_history_limit = 5
-  }
-
-  timeouts {
-    create = "2m"
-  }
-}
-
-resource "kubernetes_service" "service" {
-  metadata {
-    name      = var.name
-    namespace = "default"
-
-    labels = {
-      k8s-app = var.name
-    }
-  }
-
-  spec {
-    type = length(var.forward_tcp) == 0 ? "ClusterIP" : "LoadBalancer"
     port {
       port        = var.web_access_port
       target_port = "web-access"
@@ -203,7 +26,116 @@ resource "kubernetes_service" "service" {
   }
 }
 
+resource "kubernetes_service" "service_udp" {
+  count = length(var.forward_udp)
+
+  metadata {
+    name      = "${var.name}-udp"
+    namespace = "default"
+
+    labels = {
+      k8s-app = var.name
+    }
+  }
+
+  spec {
+    type = "LoadBalancer"
+
+    port {
+      port        = var.forward_udp[count.index]
+      protocol    = "UDP"
+      target_port = "udp-${count.index}"
+    }
+
+    selector = {
+      k8s-app = var.name
+    }
+  }
+}
+
+resource "kubernetes_service" "service_tcp" {
+  count = length(var.forward_tcp)
+
+  metadata {
+    name      = "${var.name}-tcp"
+    namespace = "default"
+
+    labels = {
+      k8s-app = var.name
+    }
+  }
+
+  spec {
+    type = "LoadBalancer"
+
+    port {
+      port        = var.forward_tcp[count.index]
+      target_port = "tcp-${count.index}"
+    }
+
+    selector = {
+      k8s-app = var.name
+    }
+  }
+}
+
+resource "kubernetes_service" "internal_tcp" {
+  count = length(var.internal_tcp)
+
+  metadata {
+    name      = "${var.name}-tcp"
+    namespace = "default"
+
+    labels = {
+      k8s-app = var.name
+    }
+  }
+
+  spec {
+    type = "ClusterIP"
+
+    port {
+      port        = var.internal_tcp[count.index]
+      target_port = "tcp-int-${count.index}"
+    }
+
+    selector = {
+      k8s-app = var.name
+    }
+  }
+}
+
+resource "kubernetes_ingress" "ingress-proxy" {
+  count = length(var.proxy_list) == 0 ? 0 : 1
+  metadata {
+    name = "${var.name}-proxies"
+    namespace = "default"
+    annotations = {
+      "traefik.frontend.entryPoints" = "http,https"
+    }
+  }
+  spec {
+    dynamic "rule" {
+      for_each = var.proxy_list
+      content {
+        host = chomp(rule.value)
+        http {
+          path {
+            backend {
+              service_name = kubernetes_service.internal_tcp[0].metadata[0].name
+              service_port = 80
+            }
+
+            path = "/"
+          }
+        }
+      }
+    }
+  }
+}
+
 resource "kubernetes_ingress" "ingress" {
+  count = var.web_access_port == null ? 0 : 1
   metadata {
     name = var.name
     namespace = "default"
@@ -219,7 +151,7 @@ resource "kubernetes_ingress" "ingress" {
       http {
         path {
           backend {
-            service_name = var.name
+            service_name = kubernetes_service.service_web[0].metadata[0].name
             service_port = var.web_access_port
           }
 
@@ -228,4 +160,8 @@ resource "kubernetes_ingress" "ingress" {
       }
     }
   }
+}
+
+output "internal_ip" {
+  value = length(kubernetes_service.internal_tcp) > 0 ? kubernetes_service.internal_tcp[0].spec[0].cluster_ip : null
 }

@@ -37,6 +37,12 @@ variable "forward_tcp" {
   type        = list(number)
 }
 
+variable "internal_tcp" {
+  description = "TCP Ports to forward internally"
+  default     = []
+  type        = list(number)
+}
+
 variable "forward_udp" {
   description = "UDP Ports to forward"
   default     = []
@@ -130,6 +136,12 @@ variable "ephermeral_volumes" {
   type = list(string)
 }
 
+variable "proxy_list" {
+  description = "List of hosts we are proxying"
+  default = []
+  type = list(string)
+}
+
 variable "scale" {
   description = "Override for scaling how many containers should exist for this service"
   default = 1
@@ -148,4 +160,10 @@ variable "added_devices" {
 variable "tty" {
   description = "Adds tty to container"
   default = false
+}
+
+variable "additional_args" {
+  description = "A list of additional args to send to the container"
+  default = null
+  type = list(string)
 }
