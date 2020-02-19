@@ -173,3 +173,7 @@ variable "additional_args" {
   default = null
   type = list(string)
 }
+
+variable "public" {
+  default = false
+}

@@ -1,4 +1,9 @@
 locals {
+  annotations = map(flatten([
+     var.public ? ["traefik.ingress.kubernetes.io/frontend-entry-points", "https-public"] : []
+  ]))
+
+  publicity = var.public ? "public" : "local"
 }
 
 resource "kubernetes_service" "service_web" {
@@ -165,18 +170,16 @@ resource "kubernetes_ingress" "ingress" {
   metadata {
     name = var.name
     namespace = "default"
-    annotations = {
-      "traefik.ingress.kubernetes.io/router.tls.certresolver" = "default"
-    }
+    annotations = local.annotations
   }
 
   spec {
     tls {
-      hosts = ["${var.name}.local.deangalvin.com"]
+      hosts = ["${var.name}.${local.publicity}.deangalvin.com"]
     }
 
     rule {
-      host = "${var.name}.local.deangalvin.com"
+      host = "${var.name}.${local.publicity}.deangalvin.com"
       http {
         path {
           backend {
