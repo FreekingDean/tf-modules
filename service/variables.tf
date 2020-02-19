@@ -177,3 +177,9 @@ variable "additional_args" {
 variable "public" {
   default = false
 }
+
+variable "init_command" {
+  description = "An inital command to run in a container"
+  type = string
+  default = null
+}

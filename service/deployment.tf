@@ -133,6 +133,40 @@ resource "kubernetes_deployment" "deployment" {
           nameservers = ["8.8.8.8"]
         }
 
+        dynamic "init_container" {
+          for_each = var.init_command == null ? [] : [true]
+          content {
+            name  = var.name
+            image = "${var.image}:${var.image_version}"
+
+            security_context {
+              privileged = length(var.added_devices) > 0 ? true : false
+              capabilities {
+                add = local.capabilities
+              }
+            }
+
+            command = [var.init_command]
+
+            dynamic "volume_mount" {
+              for_each = local.paths
+
+              content {
+                name = "vol-${volume_mount.key}"
+                mount_path = volume_mount.value.target
+                read_only = volume_mount.value.read_only
+              }
+            }
+
+            security_context {
+              privileged = length(var.added_devices) > 0 ? true : false
+              capabilities {
+                add = local.capabilities
+              }
+            }
+          }
+        }
+
         container {
           name  = var.name
           image = "${var.image}:${var.image_version}"
