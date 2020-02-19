@@ -165,6 +165,9 @@ resource "kubernetes_ingress" "ingress" {
   metadata {
     name = var.name
     namespace = "default"
+    annotations = {
+      "traefik.ingress.kubernetes.io/router.tls.certresolver" = "default"
+    }
   }
 
   spec {
