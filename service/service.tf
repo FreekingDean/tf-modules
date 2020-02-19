@@ -1,7 +1,7 @@
 locals {
-  annotations = map(flatten([
-     var.public ? ["traefik.ingress.kubernetes.io/frontend-entry-points", "https-public"] : []
-  ]))
+  annotations = var.public ? {
+    "traefik.ingress.kubernetes.io/frontend-entry-points" = "https-public"
+  } : null
 
   publicity = var.public ? "public" : "local"
 }
