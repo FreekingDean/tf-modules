@@ -134,7 +134,7 @@ resource "kubernetes_deployment" "deployment" {
         }
 
         dynamic "init_container" {
-          for_each = var.init_command == null ? [] : [true]
+          for_each = var.init_command == "" ? [] : [true]
           content {
             name  = var.name
             image = "${var.image}:${var.image_version}"

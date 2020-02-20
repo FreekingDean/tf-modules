@@ -179,7 +179,6 @@ variable "public" {
 }
 
 variable "init_command" {
-  description = "An inital command to run in a container"
-  type = string
-  default = null
+  description = "An initial container command to run"
+  default = ""
 }
