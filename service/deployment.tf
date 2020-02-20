@@ -139,7 +139,7 @@ resource "kubernetes_deployment" "deployment" {
             name  = "${var.name}-init"
             image = "${var.image}:${var.image_version}"
 
-            command = [var.init_command]
+            args = [var.init_command]
 
             dynamic "volume_mount" {
               for_each = local.paths
