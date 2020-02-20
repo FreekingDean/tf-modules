@@ -141,6 +141,14 @@ resource "kubernetes_deployment" "deployment" {
 
             args = [var.init_command]
 
+            dynamic "env" {
+              for_each = var.env
+              content {
+                name = env.key
+                value = env.value
+              }
+            }
+
             dynamic "volume_mount" {
               for_each = local.paths
 
