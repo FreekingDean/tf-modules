@@ -139,13 +139,6 @@ resource "kubernetes_deployment" "deployment" {
             name  = var.name
             image = "${var.image}:${var.image_version}"
 
-            security_context {
-              privileged = length(var.added_devices) > 0 ? true : false
-              capabilities {
-                add = local.capabilities
-              }
-            }
-
             command = [var.init_command]
 
             dynamic "volume_mount" {
