@@ -59,10 +59,8 @@ resource "kubernetes_service" "service_udp" {
 }
 
 resource "kubernetes_service" "service_tcp" {
-  for_each = toset(var.forward_tcp)
-
   metadata {
-    name      = "${var.name}-tcp-${each.value}"
+    name      = "${var.name}-tcp-external"
     namespace = "default"
 
     labels = {
@@ -73,9 +71,12 @@ resource "kubernetes_service" "service_tcp" {
   spec {
     type = "LoadBalancer"
 
-    port {
-      port        = each.value
-      target_port = "tcp-${each.value}"
+    dynamic "port" {
+      for_each = var.forward_tcp
+      content {
+        port        = port.value
+        target_port = "tcp-${port.value}"
+      }
     }
 
     selector = {
