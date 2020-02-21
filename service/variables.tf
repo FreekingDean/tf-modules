@@ -182,3 +182,8 @@ variable "init_command" {
   description = "An initial container command to run"
   default = ""
 }
+
+variable "privileged" {
+  description = "If the container should run priviliged or not"
+  default = false
+}

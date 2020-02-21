@@ -1,4 +1,5 @@
 locals {
+  privileged = length(var.added_devices) > 0 || var.privleged
   read_only_paths_normalized = [for paths in var.read_only_paths: {
     target = paths.c
     source = paths.h
@@ -160,7 +161,7 @@ resource "kubernetes_deployment" "deployment" {
             }
 
             security_context {
-              privileged = length(var.added_devices) > 0 ? true : false
+              privileged = local.privleged
               capabilities {
                 add = local.capabilities
               }
