@@ -1,7 +1,11 @@
 locals {
   annotations = var.public ? {
     "traefik.ingress.kubernetes.io/frontend-entry-points" = "https-public"
-  } : null
+  } : {
+    "traefik.ingress.kubernetes.io/router.tls.certresolver" = "default"
+    "traefik.ingress.kubernetes.io/router.tls.domains.0.main" = "local.deangalvin.com"
+    "traefik.ingress.kubernetes.io/router.tls.domains.0.sans" = "*.local.deangalvin.com"
+  }
 
   publicity = var.public ? "public" : "local"
 }
