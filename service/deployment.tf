@@ -201,7 +201,7 @@ resource "kubernetes_deployment" "deployment" {
             content {
               container_port = port.value
               protocol       = "TCP"
-              name           = "tcp-${port.key}"
+              name           = "tcp-${port.value}"
             }
           }
 

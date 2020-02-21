@@ -59,10 +59,10 @@ resource "kubernetes_service" "service_udp" {
 }
 
 resource "kubernetes_service" "service_tcp" {
-  count = length(var.forward_tcp)
+  for_each = var.forward_tcp
 
   metadata {
-    name      = "${var.name}-tcp"
+    name      = "${var.name}-tcp-${each.value}"
     namespace = "default"
 
     labels = {
@@ -74,8 +74,8 @@ resource "kubernetes_service" "service_tcp" {
     type = "LoadBalancer"
 
     port {
-      port        = var.forward_tcp[count.index]
-      target_port = "tcp-${count.index}"
+      port        = each.value
+      target_port = "tcp-${each-value}"
     }
 
     selector = {
