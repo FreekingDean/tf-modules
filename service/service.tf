@@ -75,7 +75,7 @@ resource "kubernetes_service" "service_tcp" {
 
     port {
       port        = each.value
-      target_port = "tcp-${each-value}"
+      target_port = "tcp-${each.value}"
     }
 
     selector = {
