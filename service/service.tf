@@ -59,7 +59,7 @@ resource "kubernetes_service" "service_udp" {
 }
 
 resource "kubernetes_service" "service_tcp" {
-  for_each = var.forward_tcp
+  for_each = toset(var.forward_tcp)
 
   metadata {
     name      = "${var.name}-tcp-${each.value}"
