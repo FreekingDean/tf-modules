@@ -3,7 +3,7 @@ locals {
     "traefik.ingress.kubernetes.io/frontend-entry-points" = "https-public"
   } : {
     "traefik.ingress.kubernetes.io/router.tls.certresolver" = "default"
-    "traefik.ingress.kubernetes.io/router.tls.domains.0.main" = "${var.name}.local.deangalvin.com"
+    "traefik.ingress.kubernetes.io/router.tls.domains.0.main" = "deangalvin.com"
     "traefik.ingress.kubernetes.io/router.tls.domains.0.sans" = "*.local.deangalvin.com"
   }
 
