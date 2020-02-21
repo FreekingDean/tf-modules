@@ -1,9 +1,5 @@
 locals {
-  annotations = var.public ? {
-    "traefik.ingress.kubernetes.io/frontend-entry-points" = "https-public"
-  } : {
-    "traefik.ingress.kubernetes.io/router.tls" = "true"
-  }
+  entrypoints = var.public ? "https-public" : "https-local"
 
   publicity = var.public ? "public" : "local"
 }
@@ -174,7 +170,10 @@ resource "kubernetes_ingress" "ingress" {
   metadata {
     name = var.name
     namespace = "default"
-    annotations = local.annotations
+    annotations = {
+      "traefik.ingress.kubernetes.io/router.entrypoints" = local.entrypoints
+      "traefik.ingress.kubernetes.io/router.tls" = "true"
+    }
   }
 
   spec {
