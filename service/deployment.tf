@@ -1,5 +1,5 @@
 locals {
-  privileged = length(var.added_devices) > 0 || var.privleged
+  privileged = length(var.added_devices) > 0 || var.privileged
   read_only_paths_normalized = [for paths in var.read_only_paths: {
     target = paths.c
     source = paths.h
