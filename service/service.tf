@@ -59,6 +59,7 @@ resource "kubernetes_service" "service_udp" {
 }
 
 resource "kubernetes_service" "service_tcp" {
+  count = length(var.forward_tcp) > 0 ? 1 : 0
   metadata {
     name      = "${var.name}-tcp-external"
     namespace = "default"
