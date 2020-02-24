@@ -136,7 +136,7 @@ resource "kubernetes_deployment" "deployment" {
 
           content {
             config_map {
-              name = kubernetes.config_map.config_file.metadata.name
+              name = kubernetes_config_map.config_file.metadata.name
             }
             name = "config-file"
           }
