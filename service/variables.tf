@@ -189,6 +189,6 @@ variable "privileged" {
 }
 
 variable "run_as_user" {
-  description "should run as non root user"
+  description = "should run as non root user"
   default = 0
 }

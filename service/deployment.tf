@@ -160,7 +160,6 @@ resource "kubernetes_deployment" "deployment" {
               }
             }
 
-
             security_context {
               privileged = local.privleged
               capabilities {
@@ -177,7 +176,7 @@ resource "kubernetes_deployment" "deployment" {
           security_context {
             privileged = length(var.added_devices) > 0 ? true : false
             run_as_non_root = var.run_as_user == 0 ? null : true
-            run_as_user = var.run_as_user
+            run_as_user = var.run_as_user == 0 ? null : var.run_as_user
             capabilities {
               add = local.capabilities
             }
