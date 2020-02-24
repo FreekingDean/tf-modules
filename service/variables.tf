@@ -187,3 +187,8 @@ variable "privileged" {
   description = "If the container should run priviliged or not"
   default = false
 }
+
+variable "run_as_user" {
+  description "should run as non root user"
+  default = 0
+}
