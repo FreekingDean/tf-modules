@@ -91,6 +91,18 @@ locals {
   ])
 }
 
+resource "kubernetes_config_map" "config" {
+  count = var.config_file == null ? 0 : 1
+
+  metadata {
+    name = "${var.name}-${var.config_file.filename}"
+  }
+
+  data = {
+    (var.config_file.filename) = var.config_file.contents
+  }
+}
+
 resource "kubernetes_deployment" "deployment" {
   metadata {
     name      = var.name
@@ -119,6 +131,17 @@ resource "kubernetes_deployment" "deployment" {
       }
 
       spec {
+        dynamic "volume" {
+          for_each = var.config_file == null ? [] : [true]
+
+          content {
+            config_map {
+              name = kubernetes.config_map.config_file.metadata.name
+            }
+            name = "config-file"
+          }
+        }
+
         dynamic "volume" {
           for_each = local.paths
           content {
@@ -232,6 +255,17 @@ resource "kubernetes_deployment" "deployment" {
               container_port = port.value
               protocol       = "UDP"
               name           = "udp-int-${port.key}"
+            }
+          }
+
+
+          dynamic "volume_mount" {
+            for_each = var.config_file == null ? [] : [true]
+
+            content {
+              name = "config-file"
+              mount_path = var.config_file.directory
+              read_only = true
             }
           }
 

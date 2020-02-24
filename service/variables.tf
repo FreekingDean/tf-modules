@@ -67,6 +67,16 @@ variable "config_path" {
   type        = string
 }
 
+variable "config_file" {
+  description = "The path to the configuration on the container"
+  default     = null
+  type        = object({
+    directory = string
+    filename = string
+    contents = string
+  })
+}
+
 variable "dockersock_path" {
   description = "The path to the dockersock on the container"
   default     = null
