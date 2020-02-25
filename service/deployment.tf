@@ -264,7 +264,8 @@ resource "kubernetes_deployment" "deployment" {
 
             content {
               name = "config-file"
-              mount_path = var.config_file.directory
+              mount_path = "${var.config_file.directory}/${var.config_file.filename}"
+              sub_path = var.config_file.filename
               read_only = true
             }
           }
