@@ -146,7 +146,7 @@ resource "kubernetes_deployment" "deployment" {
           for_each = local.paths
           content {
             name = "vol-${volume.key}"
-            persistent_volume_path {
+            persistent_volume_claim {
               claim_name = split("/", volume.value.source)[2]
             }
           }
