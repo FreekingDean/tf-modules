@@ -276,6 +276,7 @@ resource "kubernetes_deployment" "deployment" {
               name       = "vol-${volume_mount.key}"
               mount_path = volume_mount.value.target
               read_only  = volume_mount.value.read_only
+              sub_path   = join("/", slice(split("/", volume_mount.value.source), 3, length(volume_mount.value.source)))
             }
           }
 
