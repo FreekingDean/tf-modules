@@ -178,7 +178,7 @@ resource "kubernetes_deployment" "deployment" {
               content {
                 name       = "vol-${volume_mount.key}"
                 mount_path = volume_mount.value.target
-                sub_path   = slice(split("/", volume_mount.value.source), 3, length(volume_mount.value.source))
+                sub_path   = join("/", slice(split("/", volume_mount.value.source), 3, length(volume_mount.value.source)))
               }
             }
 
